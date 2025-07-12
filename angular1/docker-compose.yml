@@ -1,0 +1,6 @@
+services:
+  node:
+    image:
+      angularapp:latest
+    ports:
+      - 4200:4200 
