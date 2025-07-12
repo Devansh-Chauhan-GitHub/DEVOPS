@@ -1,56 +1,112 @@
-## Compose sample application
-### PHP application with Apache2
+## 🐘 Dockerizing Apache + PHP App – Documentation
 
-Project structure:
-```
-.
-├── compose.yaml
-├── app
-    ├── Dockerfile
-    └── index.php
+This README explains how the Dockerfile and Docker Compose file were created for an Apache + PHP project. Use this to understand the logic behind each instruction.
 
+---
+
+### ✅ Dockerfile Used
+
+```Dockerfile
+FROM php:8.3-apache
+
+WORKDIR /app
+
+COPY . /var/www/html
+
+EXPOSE 80
 ```
 
-[_compose.yaml_](compose.yaml)
-```
+### 📦 Docker Compose File
+
+```yaml
 services:
-  web:
-    build: app
-    ports: 
-      - '80:80'
-    volumes:
-      - ./app:/var/www/html/
+  php:
+    build:
+      context: .
+    ports:
+      - 80:80
 ```
 
-## Deploy with docker compose
+---
 
-```
-$ docker compose up -d
-Creating network "php-docker_web" with the default driver
-Building web
-Step 1/6 : FROM php:7.2-apache
-...
-...
-Creating php-docker_web_1 ... done
+### 🔍 Step-by-Step Explanation
 
+#### 1. `FROM php:8.3-apache`
+
+- Uses the official PHP image with Apache pre-installed.
+- Great for running PHP apps directly with Apache web server.
+
+#### 2. `WORKDIR /app`
+
+- Sets working directory inside the container for any future RUN/COPY instructions.
+- Doesn't affect how Apache serves files.
+
+#### 3. `COPY . /var/www/html`
+
+- Copies all your project files (including `index.php`) into Apache’s default root directory.
+- Apache serves files from `/var/www/html`.
+
+#### 4. `EXPOSE 80`
+
+- Exposes port 80 so Apache can serve the app over HTTP.
+- Matches the default Apache configuration.
+
+---
+
+### 📄 Why No `CMD` Is Written
+
+> **Why no **``** in the Dockerfile?**
+>
+> The base image `php:8.3-apache` already defines a default `CMD`:
+>
+> ```Dockerfile
+> CMD ["apache2-foreground"]
+> ```
+>
+> This command starts Apache in the foreground so the container doesn't exit. It's the exact behavior we want, so there's no need to redefine it.
+
+#### ✅ What If You Did Want to Write It?
+
+```Dockerfile
+CMD ["apache2-foreground"]
 ```
 
-## Expected result
+Or (not recommended):
 
-Listing containers must show one container running and the port mapping as below:
-```
-$ docker ps
-CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS                  NAMES
-2bc8271fee81        php-docker_web               "docker-php-entrypoi…"   About a minute ago  Up About a minute   0.0.0.0:80->80/tc    php-docker_web_1
+```Dockerfile
+CMD apache2-foreground
 ```
 
-After the application starts, navigate to `http://localhost:80` in your web browser or run:
-```
-$ curl localhost:80
-Hello World!
+Apache must run in the foreground in Docker to keep the container alive.
+
+---
+
+### 🚀 Build and Run
+
+```bash
+docker build -t php:latest .
+docker run -d -p 80:80 php:latest
 ```
 
-Stop and remove the containers
+Or with Docker Compose:
+
+```bash
+docker compose up -d
 ```
-$ docker compose down
-```
+
+Open in browser: `http://<your-ec2-ip>`
+
+---
+
+### 🧠 Final Notes
+
+- Apache serves files from `/var/www/html`.
+- You must have an `index.php` or `index.html` inside that folder.
+- Use the base image `php:<version>-apache` to save time—Apache is pre-configured.
+- Always check Apache logs via `docker logs <container-name>` if something doesn't work.
+
+---
+
+Created for: **Apache + PHP App** | Based on: **php:8.3-apache**
+
+ 
