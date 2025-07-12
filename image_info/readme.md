@@ -93,18 +93,3 @@ A handy reference for selecting the correct Docker base image depending on your 
 | **Terraform**    | `hashicorp/terraform`             | Infrastructure as Code (IaC) tool.    |
 | **Ansible**      | `ansible/ansible`                 | Configuration management tool.        |
 
----
-
-### 🛠️ Example Multi-Stage Build: Angular + NGINX
-
-```dockerfile
-# Stage 1: Build Angular App
-FROM node:18-alpine as builder
-WORKDIR /app
-COPY . .
-RUN npm ci && npm run build --prod
-
-# Stage 2: Serve with NGINX
-FROM nginx:alpine
-COPY --from=builder /app/dist/your-app-name /usr/share/nginx/html
-
