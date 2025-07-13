@@ -1,0 +1,25 @@
+services:
+  mongodb:
+    image: mongo:8.0.12-rc0
+    networks:
+      - mynet
+  flask:
+    build:
+      context: flask
+    depends_on:
+      - mongodb
+    environment:
+      - FLASK_SERVER_PORT=9090
+    networks:
+      - mynet
+  nginx:
+    image: nginx:stable-perl
+    ports:
+      - 80:80
+    environment:
+      - FLASK_SERVER_ADDR=backend:9091
+    depends_on:
+      - flask
+networks:
+  mynet:
+    driver: bridge
